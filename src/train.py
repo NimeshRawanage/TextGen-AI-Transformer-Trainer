@@ -1,11 +1,15 @@
 import os
+import sys
 import torch
 import argparse
 from transformers import (
     AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM, Trainer, TrainingArguments,
     DataCollatorForLanguageModeling  # Required for GPT-2 loss calculation
 )
-from src.preprocess import get_dataset  # ✅ Import preprocessing function
+# Add the `src` directory to Python's module search path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from src.preprocess import get_dataset  # Import preprocessing function
 
 # Check if GPU is available
 device = "cuda" if torch.cuda.is_available() else "cpu"
