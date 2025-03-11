@@ -1,51 +1,14 @@
 import os
 import torch
 import argparse
-from datasets import load_dataset
 from transformers import (
     AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM, Trainer, TrainingArguments,
     DataCollatorForLanguageModeling  # Required for GPT-2 loss calculation
 )
+from src.preprocess import get_dataset  # ✅ Import preprocessing function
 
 # Check if GPU is available
 device = "cuda" if torch.cuda.is_available() else "cpu"
-
-def get_dataset(dataset_name, model_name, tokenizer):
-    """
-    Loads and preprocesses the dataset for training.
-    Adds labels for GPT-2 to enable loss calculation.
-
-    Args:
-    - dataset_name (str): The name of the dataset from Hugging Face.
-    - model_name (str): The model to be trained (e.g., "gpt2" or "t5-small").
-    - tokenizer: The tokenizer instance for the model.
-
-    Returns:
-    - train_dataset: Preprocessed training dataset.
-    - val_dataset: Preprocessed validation dataset.
-    """
-
-    print(f"📌 Downloading dataset: {dataset_name}")
-    dataset = load_dataset(dataset_name, "wikitext-103-raw-v1")
-
-    # GPT-2 doesn't have a padding token by default, so we set it to EOS token
-    if "gpt2" in model_name:
-        tokenizer.pad_token = tokenizer.eos_token  
-
-    def preprocess(example):
-        """
-        Tokenizes the dataset.
-        - Truncates text to fit the max model input size.
-        - Pads sequences to the max length.
-        - Adds labels (needed for GPT-2 loss calculation).
-        """
-        encoding = tokenizer(example["text"], truncation=True, padding="max_length", max_length=512)
-        encoding["labels"] = encoding["input_ids"].copy()  # GPT-2 needs labels
-        return encoding
-
-    # Apply tokenization to both training & validation datasets
-    dataset = dataset.map(preprocess, batched=True)
-    return dataset["train"], dataset["validation"]
 
 def train(model_name="gpt2", dataset_name="wikitext", output_dir="models/", epochs=3, batch_size=4):
     """
@@ -68,13 +31,13 @@ def train(model_name="gpt2", dataset_name="wikitext", output_dir="models/", epoc
     else:
         model = AutoModelForCausalLM.from_pretrained(model_name).to(device)  # GPT-2 for text generation
 
-    # Load and preprocess dataset
+    # Load and preprocess dataset using `preprocess.py`
     print(f"📌 Preparing dataset: {dataset_name}")
-    train_dataset, val_dataset = get_dataset(dataset_name, model_name, tokenizer)  # Get both training & validation sets
+    train_dataset, val_dataset = get_dataset(dataset_name, model_name, tokenizer)
 
     # Define training arguments
     training_args = TrainingArguments(
-        output_dir=output_dir,  # Where to save the model
+        output_dir=output_dir,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
         num_train_epochs=epochs,
@@ -82,7 +45,7 @@ def train(model_name="gpt2", dataset_name="wikitext", output_dir="models/", epoc
         save_total_limit=2,
         logging_dir="logs/",
         logging_steps=100,
-        eval_strategy="epoch",  # Fixed: Previously deprecated "evaluation_strategy"
+        eval_strategy="epoch",
         report_to="none"
     )
 
