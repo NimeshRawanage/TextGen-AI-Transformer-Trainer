@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from datasets import load_dataset
+from datasets import Dataset, load_dataset
 
 def load_custom_dataset(file_path):
     """
@@ -10,25 +10,27 @@ def load_custom_dataset(file_path):
     - file_path (str): Path to the dataset file.
 
     Returns:
-    - dataset (list): A list of text samples.
+    - dataset (Dataset): Hugging Face Dataset object containing text samples.
     """
     file_ext = file_path.split(".")[-1]
 
     if file_ext == "txt":
         with open(file_path, "r", encoding="utf-8") as f:
-            data = f.readlines()
-        return [{"text": line.strip()} for line in data if line.strip()]
+            data = [{"text": line.strip()} for line in f.readlines() if line.strip()]
 
     elif file_ext == "csv":
         df = pd.read_csv(file_path)
-        return [{"text": row} for row in df.iloc[:, 0].dropna().tolist()]
+        data = [{"text": row} for row in df.iloc[:, 0].dropna().tolist()]
 
     elif file_ext == "json":
         df = pd.read_json(file_path)
-        return [{"text": row} for row in df.iloc[:, 0].dropna().tolist()]
+        data = [{"text": row} for row in df.iloc[:, 0].dropna().tolist()]
 
     else:
         raise ValueError("Unsupported file format. Please use TXT, CSV, or JSON.")
+
+    # ✅ Convert the list into a Hugging Face Dataset
+    return Dataset.from_list(data)
 
 def get_dataset(dataset_name=None, dataset_path=None, model_name=None, tokenizer=None):
     """
@@ -69,5 +71,9 @@ def get_dataset(dataset_name=None, dataset_path=None, model_name=None, tokenizer
         encoding["labels"] = encoding["input_ids"].copy()  # GPT-2 needs labels
         return encoding
 
+    # ✅ Ensure dataset is converted into a Hugging Face Dataset before calling `.map()`
     dataset = dataset.map(preprocess, batched=True)
-    return dataset["train"], dataset["validation"]
+
+    # ✅ Split dataset (90% train, 10% validation)
+    dataset = dataset.train_test_split(test_size=0.1)
+    return dataset["train"], dataset["test"]
