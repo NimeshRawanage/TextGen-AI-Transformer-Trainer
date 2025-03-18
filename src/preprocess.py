@@ -50,9 +50,23 @@ def get_dataset(dataset_name=None, dataset_path=None, model_name=None, tokenizer
     if dataset_path:
         print(f"📌 Loading custom dataset from {dataset_path}...")
         dataset = load_custom_dataset(dataset_path)
+
+        # ✅ Convert dataset to Hugging Face Dataset format
+        dataset = Dataset.from_list(dataset)
+        
+        # ✅ Split custom dataset into 90% training, 10% validation
+        dataset = dataset.train_test_split(test_size=0.1)
+        train_dataset = dataset["train"]
+        val_dataset = dataset["test"]
+
     elif dataset_name:
         print(f"📌 Downloading dataset: {dataset_name}")
         dataset = load_dataset(dataset_name, "wikitext-2-raw-v1")  # Default config
+
+        # ✅ Hugging Face datasets return a DatasetDict with predefined splits
+        train_dataset = dataset["train"]
+        val_dataset = dataset["validation"]
+
     else:
         raise ValueError("You must provide either `dataset_name` or `dataset_path`.")
 
@@ -71,9 +85,8 @@ def get_dataset(dataset_name=None, dataset_path=None, model_name=None, tokenizer
         encoding["labels"] = encoding["input_ids"].copy()  # GPT-2 needs labels
         return encoding
 
-    # ✅ Ensure dataset is converted into a Hugging Face Dataset before calling `.map()`
-    dataset = dataset.map(preprocess, batched=True)
+    # ✅ Apply tokenization
+    train_dataset = train_dataset.map(preprocess, batched=True)
+    val_dataset = val_dataset.map(preprocess, batched=True)
 
-    # ✅ Split dataset (90% train, 10% validation)
-    dataset = dataset.train_test_split(test_size=0.1)
-    return dataset["train"], dataset["test"]
+    return train_dataset, val_dataset
