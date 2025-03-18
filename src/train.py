@@ -1,26 +1,23 @@
 import os
-import sys
 import torch
 import argparse
 from transformers import (
     AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM, Trainer, TrainingArguments,
-    DataCollatorForLanguageModeling  # Required for GPT-2 loss calculation
+    DataCollatorForLanguageModeling
 )
-# Add the `src` directory to Python's module search path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-from src.preprocess import get_dataset  # Import preprocessing function
+from src.preprocess import get_dataset  # ✅ Import preprocessing function
 
 # Check if GPU is available
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-def train(model_name="gpt2", dataset_name="wikitext", output_dir="models/", epochs=3, batch_size=4):
+def train(model_name="gpt2", dataset_name=None, dataset_path=None, output_dir="models/", epochs=3, batch_size=4):
     """
     Trains a GPT-2 or T5 model using Hugging Face's Trainer API.
 
     Args:
     - model_name (str): Name of the model to fine-tune (default: "gpt2").
-    - dataset_name (str): Name of the dataset from Hugging Face.
+    - dataset_name (str): Name of the dataset from Hugging Face (if provided).
+    - dataset_path (str): Path to a custom dataset (if provided).
     - output_dir (str): Directory where the trained model will be saved.
     - epochs (int): Number of training epochs.
     - batch_size (int): Batch size for training.
@@ -31,13 +28,13 @@ def train(model_name="gpt2", dataset_name="wikitext", output_dir="models/", epoc
 
     # Load pre-trained model
     if "t5" in model_name:
-        model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(device)  # T5 model for summarization/paraphrasing
+        model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(device)  # T5 for summarization/paraphrasing
     else:
         model = AutoModelForCausalLM.from_pretrained(model_name).to(device)  # GPT-2 for text generation
 
     # Load and preprocess dataset using `preprocess.py`
-    print(f"📌 Preparing dataset: {dataset_name}")
-    train_dataset, val_dataset = get_dataset(dataset_name, model_name, tokenizer)
+    print(f"📌 Preparing dataset...")
+    train_dataset, val_dataset = get_dataset(dataset_name, dataset_path, model_name, tokenizer)
 
     # Define training arguments
     training_args = TrainingArguments(
@@ -50,10 +47,11 @@ def train(model_name="gpt2", dataset_name="wikitext", output_dir="models/", epoc
         logging_dir="logs/",
         logging_steps=100,
         eval_strategy="epoch",
-        report_to="none"
+        report_to="none",
+        fp16=True  # Enable mixed precision for faster training
     )
 
-    # Define data collator (needed for causal language models like GPT-2)
+    # Define data collator (needed for GPT-2)
     data_collator = DataCollatorForLanguageModeling(
         tokenizer=tokenizer,
         mlm=False  # GPT-2 is not a masked language model (MLM)
@@ -65,7 +63,7 @@ def train(model_name="gpt2", dataset_name="wikitext", output_dir="models/", epoc
         args=training_args,
         train_dataset=train_dataset,  # Training dataset
         eval_dataset=val_dataset,  # Validation dataset
-        data_collator=data_collator  # Required for GPT-2 loss computation
+        data_collator=data_collator
     )
 
     print("🚀 Training started...")
@@ -80,10 +78,11 @@ if __name__ == "__main__":
     # Define command-line arguments for flexibility
     parser = argparse.ArgumentParser(description="Fine-Tune GPT-2 or T5 for Text Generation")
     parser.add_argument("--model", type=str, default="gpt2", help="Model to fine-tune (e.g., 'gpt2' or 't5-small')")
-    parser.add_argument("--dataset", type=str, default="wikitext", help="Dataset name from Hugging Face")
+    parser.add_argument("--dataset", type=str, default=None, help="Dataset name from Hugging Face (e.g., 'wikitext')")
+    parser.add_argument("--dataset_path", type=str, default=None, help="Path to a custom dataset file (TXT, CSV, JSON)")
     parser.add_argument("--epochs", type=int, default=3, help="Number of training epochs")
     parser.add_argument("--batch_size", type=int, default=4, help="Batch size")
     parser.add_argument("--output_dir", type=str, default="models/", help="Where to save trained model")
 
     args = parser.parse_args()
-    train(args.model, args.dataset, args.output_dir, args.epochs, args.batch_size)
+    train(args.model, args.dataset, args.dataset_path, args.output_dir, args.epochs, args.batch_size)
