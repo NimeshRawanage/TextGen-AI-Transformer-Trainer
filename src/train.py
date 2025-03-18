@@ -75,7 +75,7 @@ def train(model_name="gpt2", dataset_name=None, dataset_path=None, output_dir="m
     trainer.train()
 
     # Save the trained model
-    model.save_pretrained(output_dir)
+    model.save_pretrained(output_dir, safe_serialization=False)
     tokenizer.save_pretrained(output_dir)
     print(f"✅ Training complete! Model saved to {output_dir}")
 
