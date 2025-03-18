@@ -1,11 +1,16 @@
+import sys
 import os
-import torch
-import argparse
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from transformers import (
     AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM, Trainer, TrainingArguments,
     DataCollatorForLanguageModeling
 )
-from src.preprocess import get_dataset  # ✅ Import preprocessing function
+from src.preprocess import get_dataset  
+
+import torch
+import argparse
 
 # Check if GPU is available
 device = "cuda" if torch.cuda.is_available() else "cpu"
