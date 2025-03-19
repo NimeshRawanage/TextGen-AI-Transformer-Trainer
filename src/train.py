@@ -7,7 +7,7 @@ from transformers import (
     AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM, Trainer, TrainingArguments,
     DataCollatorForLanguageModeling
 )
-from src.preprocess import get_dataset  
+from src.preprocess import get_dataset
 
 import torch
 import argparse
@@ -41,9 +41,14 @@ def train(model_name="gpt2", dataset_name=None, dataset_path=None, output_dir="m
     print(f"📌 Preparing dataset...")
     train_dataset, val_dataset = get_dataset(dataset_name, dataset_path, model_name, tokenizer)
 
+    # ✅ Generate a unique model save directory
+    dataset_id = dataset_name if dataset_name else os.path.basename(dataset_path).split('.')[0]
+    model_save_dir = os.path.join(output_dir, f"{model_name}_{dataset_id}")
+    os.makedirs(model_save_dir, exist_ok=True)  # Ensure directory exists
+
     # Define training arguments
     training_args = TrainingArguments(
-        output_dir=output_dir,
+        output_dir=model_save_dir,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
         num_train_epochs=epochs,
@@ -74,10 +79,10 @@ def train(model_name="gpt2", dataset_name=None, dataset_path=None, output_dir="m
     print("🚀 Training started...")
     trainer.train()
 
-    # Save the trained model
-    model.save_pretrained(output_dir, safe_serialization=False)
-    tokenizer.save_pretrained(output_dir)
-    print(f"✅ Training complete! Model saved to {output_dir}")
+    # ✅ Save the trained model in the unique directory
+    model.save_pretrained(model_save_dir, safe_serialization=False)
+    tokenizer.save_pretrained(model_save_dir)
+    print(f"✅ Training complete! Model saved to {model_save_dir}")
 
 if __name__ == "__main__":
     # Define command-line arguments for flexibility
