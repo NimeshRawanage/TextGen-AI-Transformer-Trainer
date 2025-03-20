@@ -4,7 +4,7 @@ from datasets import Dataset, load_dataset
 
 def load_custom_dataset(file_path):
     """
-    Loads a custom dataset from TXT, CSV, or JSON format.
+    Loads a custom dataset from a TXT, CSV, or JSON file.
 
     Args:
     - file_path (str): Path to the dataset file.
@@ -29,8 +29,7 @@ def load_custom_dataset(file_path):
     else:
         raise ValueError("Unsupported file format. Please use TXT, CSV, or JSON.")
 
-    # ✅ Convert the list into a Hugging Face Dataset
-    return Dataset.from_list(data)
+    return Dataset.from_list(data)  # Convert to Hugging Face Dataset format
 
 def get_dataset(dataset_name=None, dataset_path=None, model_name=None, tokenizer=None):
     """
@@ -39,7 +38,7 @@ def get_dataset(dataset_name=None, dataset_path=None, model_name=None, tokenizer
     Args:
     - dataset_name (str): The name of the dataset from Hugging Face.
     - dataset_path (str): Path to a custom dataset file.
-    - model_name (str): The model to be trained (e.g., "gpt2" or "t5-small").
+    - model_name (str): The model being trained (e.g., "gpt2" or "t5-small").
     - tokenizer: The tokenizer instance for the model.
 
     Returns:
@@ -48,45 +47,52 @@ def get_dataset(dataset_name=None, dataset_path=None, model_name=None, tokenizer
     """
 
     if dataset_path:
-        print(f"📌 Loading custom dataset from {dataset_path}...")
+        print(f"Loading custom dataset from {dataset_path}...")
         dataset = load_custom_dataset(dataset_path)
 
-        # ✅ Convert dataset to Hugging Face Dataset format
+        # Convert dataset to Hugging Face Dataset format
         dataset = Dataset.from_list(dataset)
-        
-        # ✅ Split custom dataset into 90% training, 10% validation
+
+        # Split dataset: 90% training, 10% validation
         dataset = dataset.train_test_split(test_size=0.1)
         train_dataset = dataset["train"]
         val_dataset = dataset["test"]
 
     elif dataset_name:
-        print(f"📌 Downloading dataset: {dataset_name}")
+        print(f"Downloading dataset: {dataset_name}...")
         dataset = load_dataset(dataset_name, "wikitext-2-raw-v1")  # Default config
 
-        # ✅ Hugging Face datasets return a DatasetDict with predefined splits
+        # Hugging Face datasets return a DatasetDict with predefined splits
         train_dataset = dataset["train"]
         val_dataset = dataset["validation"]
 
     else:
         raise ValueError("You must provide either `dataset_name` or `dataset_path`.")
 
-    # GPT-2 doesn't have a padding token by default, so we set it to EOS token
+    # Set padding token for GPT-2, as it doesn't have one by default
     if model_name and "gpt2" in model_name:
         tokenizer.pad_token = tokenizer.eos_token  
 
     def preprocess(example):
         """
-        Tokenizes the dataset.
-        - Truncates text to fit the max model input size.
-        - Pads sequences to the max length.
-        - Adds labels (needed for GPT-2 loss calculation).
+        Tokenizes the dataset using the specified tokenizer.
+
+        - Truncates text to fit the maximum model input size.
+        - Pads sequences to the maximum length.
+        - Adds labels (required for GPT-2 loss calculation).
         """
-        encoding = tokenizer(example["text"], truncation=True, padding="max_length", max_length=512)
+        encoding = tokenizer(
+            example["text"], 
+            truncation=True, 
+            padding="max_length", 
+            max_length=512
+        )
         encoding["labels"] = encoding["input_ids"].copy()  # GPT-2 needs labels
         return encoding
 
-    # ✅ Apply tokenization
+    # Apply tokenization to datasets
     train_dataset = train_dataset.map(preprocess, batched=True)
     val_dataset = val_dataset.map(preprocess, batched=True)
 
     return train_dataset, val_dataset
+
