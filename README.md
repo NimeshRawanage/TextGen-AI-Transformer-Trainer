@@ -97,11 +97,13 @@ python src/inference.py \
 📄 Supported Dataset File Formats
 
 .txt → Each line as a training sample
+
 .csv or .json → First column as text input
 
 ---
 
 📚 Documentation
+
 A full setup guide is available in docs/setup_guide.md
 
 ---
@@ -115,7 +117,10 @@ This project is licensed under the MIT License.
 ---
 
 👨‍💻 **Author**: Nimesh Rawanage
+
 AI Engineer & Backend Developer
+
 **GitHub**: [github.com/NimeshRawanage](https://github.com/NimeshRawanage)
+
 **LinkedIn**: [linkedin.com/in/nimeshrawanage](https://linkedin.com/in/nimeshrawanage)
 
