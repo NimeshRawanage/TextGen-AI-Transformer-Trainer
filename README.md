@@ -117,8 +117,8 @@ This project is licensed under the MIT License.
 
 ---
 
-👨‍💻 **Author**: Nimesh Rawanage \n
-AI Engineer & Backend Developer \n
-**GitHub**: [github.com/NimeshRawanage](https://github.com/NimeshRawanage) \n
+**Author**: Nimesh Rawanage  
+AI Engineer & Backend Developer  
+**GitHub**: [github.com/NimeshRawanage](https://github.com/NimeshRawanage)  
 **LinkedIn**: [linkedin.com/in/nimeshrawanage](https://linkedin.com/in/nimeshrawanage)
 
