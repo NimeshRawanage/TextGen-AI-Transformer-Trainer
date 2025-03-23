@@ -60,32 +60,32 @@ TextGen-AI-Transformer-Trainer/
 
 ### 1. Clone the repository
 
-```bash
+```
 git clone https://github.com/YOUR_USERNAME/TextGen-AI-Transformer-Trainer.git
 cd TextGen-AI-Transformer-Trainer
-
+```
 ### 2. Create a virtual environment and install dependencies
 
-```bash
+```
 python -m venv venv
 source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
-
+```
 ### 3. Run training
 
-```bash
+```
 python src/train.py --model gpt2 --dataset_path datasets/sample_data.txt --epochs 3 --batch_size 4 --output_dir models/
-
+```
 ### 4. Run inference
 
-```bash
+```
 python src/inference.py --model_dir models/gpt2_sample_data --prompt "Hello, how are you?" --max_length 50
-
+```
 ### 5. Run chatbot
 
-```bash
+```
 python src/inference.py --model_dir models/gpt2_sample_data --mode chat
-
+```
 ---
 
 📝 Notes
