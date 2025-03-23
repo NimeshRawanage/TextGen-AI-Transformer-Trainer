@@ -89,9 +89,11 @@ python src/inference.py --model_dir models/gpt2_sample_data --mode chat
 ---
 
 📝 Notes
+
 Ensure your dataset is in .txt, .csv, or .json format with plain text in the first column (for .csv or .json).
 Model outputs will be saved to the models/ directory automatically.
 The tokenizer will be reused from the original model (gpt2, t5-small, etc.).
+
 🙋‍♂️ Support
 If you find this project useful, feel free to give it a ⭐ and share it.
 
