@@ -5,7 +5,7 @@ This guide explains how to set up, train, and run the project both in **Google C
 ---
 
 ## 📁 Project Structure
-
+```
 TextGen-AI-Transformer-Trainer/
 ├── datasets/                 # Sample & custom dataset files
 ├── docs/                     # Documentation (setup guide, etc.)
@@ -20,7 +20,7 @@ TextGen-AI-Transformer-Trainer/
 ├── requirements.txt          # Python dependencies
 ├── README.md                 # Project overview and instructions
 └── .gitignore                # Git ignore rules
-
+```
 
 
 ---
