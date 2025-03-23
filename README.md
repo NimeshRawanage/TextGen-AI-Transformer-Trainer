@@ -94,7 +94,7 @@ python src/inference.py \
   --mode chat
 ```
 
-📄 Supported Dataset File Formats
+##📄 Supported Dataset File Formats
 
 .txt → Each line as a training sample
 
@@ -102,25 +102,23 @@ python src/inference.py \
 
 ---
 
-📚 Documentation
+##📚 Documentation
 
 A full setup guide is available in docs/setup_guide.md
 
 ---
 
-📌 License
+##📌 License
 
 This project is licensed under the MIT License.
+
 ---
 ⭐ If you find this helpful, please star the repository and share it with others!
 
 ---
 
 👨‍💻 **Author**: Nimesh Rawanage
-
 AI Engineer & Backend Developer
-
 **GitHub**: [github.com/NimeshRawanage](https://github.com/NimeshRawanage)
-
 **LinkedIn**: [linkedin.com/in/nimeshrawanage](https://linkedin.com/in/nimeshrawanage)
 
